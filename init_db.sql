@@ -124,4 +124,45 @@ SELECT COUNT(*) FROM subscriptions;
 SELECT COUNT(*) FROM views;
 
 
+faker:
+from faker import Faker
+from sqlalchemy import create_engine
+import pandas as pd
+import random
 
+fake = Faker()
+
+engine = create_engine(
+    "postgresql://postgres:08052009Mt@localhost:5432/streaming_platform"
+)
+
+users = []
+
+for _ in range(1000):
+    users.append({
+        "full_name": fake.name(),
+        "gender": random.choice(["Male", "Female"]),
+        "age": random.randint(18, 65),
+        "country": random.choice([
+            "Kazakhstan",
+            "Russia",
+            "USA",
+            "Germany",
+            "Turkey"
+        ]),
+        "registration_date": fake.date_between(
+            start_date="-3y",
+            end_date="today"
+        )
+    })
+
+df = pd.DataFrame(users)
+
+df.to_sql(
+    "users",
+    engine,
+    if_exists="append",
+    index=False
+)
+
+print("1000 users added")
